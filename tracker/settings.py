@@ -150,9 +150,9 @@ REST_FRAMEWORK = {
 }
 
 # setting up fake smtp server
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackends"
-EMAIL_HOST = "localhost"
-EMAIL_USER = ""
-EMAIL_PASSWORD = ""
-EMAIL_PORT = 2525
-DEFAULT_FROM_EMAIL = "admin@gmail.com"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# EMAIL_HOST = "localhost"
+# EMAIL_USER = ""
+# EMAIL_PASSWORD = ""
+# EMAIL_PORT = 25
+# DEFAULT_FROM_EMAIL = "admin@gmail.com"
