@@ -142,3 +142,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 AUTH_USER_MODEL = 'accounts.User'
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTCATION_CLASSES": (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+# setting up fake smtp server
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackends"
+EMAIL_HOST = "localhost"
+EMAIL_USER = ""
+EMAIL_PASSWORD = ""
+EMAIL_PORT = 2525
+DEFAULT_FROM_EMAIL = "admin@gmail.com"
