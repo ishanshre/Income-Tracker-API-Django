@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # third party
     'rest_framework',
     'debug_toolbar',
+    'drf_yasg',
 
     # local
     'accounts.apps.AccountsConfig',

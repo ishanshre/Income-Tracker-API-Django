@@ -21,7 +21,7 @@ class RegisterUserView(generics.GenericAPIView):
         activate(request=request, user=user_obj)
 
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({"Done":serializer.data,"message":"Check your email to verify your account"}, status=status.HTTP_201_CREATED)
         
 
 # class RegisterUserView(mixins.CreateModelMixin, viewsets.GenericViewSet):
