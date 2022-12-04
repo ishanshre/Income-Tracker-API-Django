@@ -27,6 +27,7 @@ urlpatterns = [
     path('__debug__/', include('debug_toolbar.urls')),
     path("auth/", include("accounts.urls")),
     path("", include("core.urls")),
+    path("", include("income.urls")),
 ]
 
 
