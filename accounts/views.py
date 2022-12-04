@@ -15,10 +15,12 @@ from accounts.serializers import (
     LoginSerializer,
 )
 from accounts.activation import activate, verify
+from accounts.renderers import UserRenderer
 # Create your views here
 
 class RegisterUserView(generics.GenericAPIView):
     serializer_class = RegisterUserSerailizer
+    renderer_classes = (UserRenderer,)
     def post(self, request, *args, **kwargs):
         user = request.data
         serializer = self.serializer_class(data=user)
@@ -38,7 +40,7 @@ class RegisterUserView(generics.GenericAPIView):
 
 class EmailVerify(generics.GenericAPIView):
     serializer_class = EmailVerifySerializer
-
+    renderer_classes = (UserRenderer,)
     token_params_config = openapi.Parameter('token', in_=openapi.IN_QUERY, description="Description", type=openapi.TYPE_STRING)
     uid_params_config = openapi.Parameter('uidb64', in_=openapi.IN_QUERY, description="Description", type=openapi.TYPE_STRING)
     @swagger_auto_schema(manual_parameters=[token_params_config, uid_params_config])
@@ -51,6 +53,7 @@ class EmailVerify(generics.GenericAPIView):
 
 class LoginApiView(generics.GenericAPIView):
     serializer_class = LoginSerializer
+    renderer_classes = (UserRenderer,)
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
