@@ -16,3 +16,9 @@ class ExpenceEditSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expence
         fields = ["id","category","amount","description"]
+
+
+class ExpencePatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Expence
+        fields = ["id","amount"]
