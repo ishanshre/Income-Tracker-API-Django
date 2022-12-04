@@ -12,6 +12,7 @@ from accounts.models import User
 from accounts.serializers import (
     RegisterUserSerailizer,
     EmailVerifySerializer,
+    LoginSerializer,
 )
 from accounts.activation import activate, verify
 # Create your views here
@@ -46,3 +47,12 @@ class EmailVerify(generics.GenericAPIView):
         if verify_status:
             return Response({"success":"email successfully verified"}, status=status.HTTP_201_CREATED)
         return Response({"error":"Invalid link for verification"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginApiView(generics.GenericAPIView):
+    serializer_class = LoginSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
