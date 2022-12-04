@@ -3,19 +3,19 @@ from django.contrib.auth import get_user_model as User
 # Create your models here.
 
 class CATEGORY_OPTIONS(models.TextChoices):
-    ONLINE_SERVICES = "S", 'Online Services'
-    TRAVEL = "T", 'Travel'
-    TRANSPORTATION = "Tr"
-    FOOD = "F", 'Food'
-    INSURANCE = "I",'Insurance'
-    ENTERTAINMENT = "E","Entertainment"
-    EMERGENCY = "EM", 'Emergency'
-    RENT = "R", "Rent"
-    UTILIES = "U", "Utilities"
-    OTHERS = "O", "Others"
+    ONLINE_SERVICES = "Online Services", 'Online Services'
+    TRAVEL = "Travel", 'Travel'
+    TRANSPORTATION = "Transportation",'Transporation'
+    FOOD = "Food", 'Food'
+    INSURANCE = "Insurance",'Insurance'
+    ENTERTAINMENT = "Entertainment","Entertainment"
+    EMERGENCY = "Emergency", 'Emergency'
+    RENT = "Rent", "Rent"
+    UTILIES = "Utilities", "Utilities"
+    OTHERS = "Others", "Others"
 
 class Expence(models.Model):
-    category = models.CharField(max_length=2, choices=CATEGORY_OPTIONS.choices, null=True, blank=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_OPTIONS.choices, null=True, blank=True)
     amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     description = models.TextField()
     owner = models.ForeignKey(User(), on_delete=models.CASCADE)
