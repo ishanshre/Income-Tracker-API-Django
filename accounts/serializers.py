@@ -48,3 +48,11 @@ class RegisterUserSerailizer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+
+class EmailVerifySerializer(serializers.ModelSerializer):
+    uidb64 = serializers.CharField()
+    token = serializers.CharField()
+    class Meta:
+        model = User
+        fields = ['token', 'uidb64']
