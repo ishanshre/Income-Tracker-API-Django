@@ -14,7 +14,8 @@ from accounts.models import User
 from accounts.serializers import (
     RegisterUserSerailizer,
     EmailVerifySerializer,
-    ResendEmailConfirmation,
+    ResendEmailConfirmationLinkSerailizer,
+    ResendEmailConfirmationSerilaizer,
     LoginSerializer,
     RestPasswordLinkSerializer,
     ResetPasswordSerializer,
@@ -57,15 +58,28 @@ class EmailVerify(generics.GenericAPIView):
 
 
 class ResendEmailVerificationApiView(generics.GenericAPIView):
-    serializer_class = ResendEmailConfirmation
+    serializer_class = ResendEmailConfirmationLinkSerailizer
     permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(instance=request.user,data=request.data)
         serializer.is_valid(raise_exception=True)
         if not request.user.is_email_confirmed:
-            create_email(request=request, user=request.user, action="register")
+            create_email(request=request, user=request.user, action="resend_email_verify")
             return Response({"done":"email confirm link has been sent to your mail"}, status=status.HTTP_200_OK)
         return Response({"error":"email already confirmed"})
+
+
+class ResendEmailConfirmationView(generics.GenericAPIView):
+    serializer_class = ResendEmailConfirmationSerilaizer
+    
+    def patch(self, request, *args, **kwargs):
+        serilaizer = self.serializer_class(data=request.data)
+        serilaizer.is_valid(raise_exception=True)
+        return Response(
+            {"done":"email confirmation successfull"},
+            status=status.HTTP_200_OK
+
+        )
 
 class LoginApiView(generics.GenericAPIView):
     serializer_class = LoginSerializer

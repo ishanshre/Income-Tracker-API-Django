@@ -13,6 +13,8 @@ def create_email(request, user, action):
     current_site = get_current_site(request).domain
     if action == "register":
         relative_path = reverse("accounts:email_verify")
+    elif action == "resend_email_verify":
+        relative_path = reverse("accounts:resend_email_verify")
     elif action == "reset_password":
         relative_path = reverse("accounts:reset_password")
     actual_url = "http://"+current_site+relative_path+"?uidb64="+str(uid)+"&token="+str(token)
@@ -41,6 +43,8 @@ def verify_token(uidb64, token, action):
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
     if user is not None and account_activation_token.check_token(user=user, token=token) and action == "reset_password":
+        return True, uid
+    elif user is not None and account_activation_token.check_token(user=user, token=token) and action == "resend_email_verify":
         return True, uid
     return False, None
 

@@ -9,7 +9,12 @@ def send_email(actual_url, to_email, username, action):
         {actual_url}
         '''
 
-    
+    elif action == "resend_email_verify":
+        subject = "Verify your Income and Expences Tracker account email"
+        message = f'''
+        Hello {username.title()}! Please open the following link to confirm email in your account
+        {actual_url}
+        '''
     elif action == "reset_password":
         subject = "Reset Your account"
         message = f'''

@@ -159,8 +159,28 @@ class ResetPasswordSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
 
-class ResendEmailConfirmation(serializers.ModelSerializer):
+class ResendEmailConfirmationLinkSerailizer(serializers.ModelSerializer):
     is_email_confirmed = serializers.BooleanField(read_only=True)
     class Meta:
         model = User
         fields = ["is_email_confirmed"]
+
+
+class ResendEmailConfirmationSerilaizer(serializers.ModelSerializer):
+    is_email_confirmed = serializers.BooleanField(read_only=True)
+    uidb64 = serializers.CharField()
+    token = serializers.CharField()
+    class Meta:
+        model = User
+        fields = ["is_email_confirmed", "uidb64","token"]
+
+    def validate(self, attrs):
+        token = attrs.get('token')
+        uidb64 = attrs.get('uidb64')
+        verify_status, uid = verify_token(uidb64=uidb64, token=token, action="resend_email_verify")
+        if uid is not None and verify_status:
+            user = User.objects.get(id=uid)
+            user.is_email_confirmed = True
+            user.save()
+            return user
+        return super().validate(attrs)
