@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.urls import reverse
 
+
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
@@ -13,8 +14,10 @@ from accounts.serializers import (
     RegisterUserSerailizer,
     EmailVerifySerializer,
     LoginSerializer,
+    RestPasswordLinkSerializer,
+    ResetPasswordSerializer
 )
-from accounts.activation import activate, verify
+from accounts.activation import create_email, verify
 from accounts.renderers import UserRenderer
 # Create your views here
 
@@ -27,7 +30,7 @@ class RegisterUserView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         user_obj = User.objects.get(email=serializer.data['email'])
-        activate(request=request, user=user_obj)
+        create_email(request=request, user=user_obj, action="register")
 
 
         return Response({"Done":serializer.data,"message":"Check your email to verify your account"}, status=status.HTTP_201_CREATED)
@@ -45,7 +48,7 @@ class EmailVerify(generics.GenericAPIView):
     uid_params_config = openapi.Parameter('uidb64', in_=openapi.IN_QUERY, description="Description", type=openapi.TYPE_STRING)
     @swagger_auto_schema(manual_parameters=[token_params_config, uid_params_config])
     def get(self, request):
-        verify_status = verify(request=request)
+        verify_status = verify(request=request, action="email_verify")
         if verify_status:
             return Response({"success":"email successfully verified"}, status=status.HTTP_201_CREATED)
         return Response({"error":"Invalid link for verification"}, status=status.HTTP_400_BAD_REQUEST)
@@ -59,3 +62,33 @@ class LoginApiView(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ResetPasswordLinkView(generics.GenericAPIView):
+    serializer_class = RestPasswordLinkSerializer
+    def post(self, request, *args, **kwargs):
+        serializer= self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user_obj = User.objects.get(email=serializer.data['email'])
+        except:
+            return Response({"error":"email_does not exist"})
+        create_email(request=request, user=user_obj, action="reset_password")
+        return Response(
+            {
+                "Done":serializer.data, "message":"check your email to reset the password",
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class RestPasswordView(generics.GenericAPIView):
+    serializer_class = ResetPasswordSerializer
+    def patch(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(
+                {"detail":"password change successfull"}, status=status.HTTP_200_OK
+            )
+
+    

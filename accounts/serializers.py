@@ -8,8 +8,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
 
 from accounts.models import User
-
-
+from accounts.activation import verify_token
 
 
 
@@ -97,3 +96,70 @@ class SimpleUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username','email']
+
+
+class RestPasswordLinkSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=255)
+    class Meta:
+        fields = ["email",]
+    
+    def validate(self, attrs):
+        try:
+            email = attrs.get("email",'')
+            if User.objects.filter(email=email).exists():
+                return attrs
+            else:
+                raise serializers.ValidationError({"error":"email does not exists"})
+        except:
+            pass
+        return attrs
+
+
+class ResetPasswordSerializer(serializers.ModelSerializer):
+    old_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True)
+    new_password_confirm = serializers.CharField(write_only=True)
+    uidb64 = serializers.CharField()
+    token = serializers.CharField()
+    class Meta:
+        model = User
+        fields = ["old_password", "new_password", "new_password_confirm", "uidb64","token"]
+    
+
+    def validate(self, attrs):
+        try:
+            old_password = attrs.get("old_password",'')
+            new_password = attrs.get("new_password",'')
+            new_password_confirm = attrs.get("new_password_confirm",'')
+            uidb64 = attrs.get("uidb64", "")
+            token = attrs.get("token", "")
+            verify_status, uid = verify_token(uidb64=uidb64, token=token, action="reset_password")
+            user = User.objects.get(id=uid) or None
+            if verify_status and user is not None:
+                if not user.check_password(old_password):
+                    raise AuthenticationFailed({
+                        "error":"old password does not match"
+                    })
+                if new_password and new_password_confirm:
+                    if new_password != new_password_confirm:
+                        raise serializers.ValidationError(
+                            {"error":"password and password confirmation mismatch"}
+                        )
+                try:
+                    validate_password(password=new_password, user=user)
+                except ValidationError as e:
+                    serializers_error = serializers.as_serializer_error(e)
+                    raise serializers.ValidationError(
+                        {"password":serializers_error[api_settings.NON_FIELD_ERRORS_KEY]}
+                    )
+                user.set_password(new_password)
+                user.save()
+                return user
+
+
+        except ValidationError as e:
+            serializers_error = serializers.as_serializer_error(e)
+            raise serializers.ValidationError(
+                {"error":serializers_error[api_settings.NON_FIELD_ERRORS_KEY]}
+            )
+        return super().validate(attrs)

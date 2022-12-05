@@ -5,18 +5,21 @@ from django.urls import reverse
 
 from accounts.models import User
 from accounts.token import account_activation_token
-from accounts.email import send_activation_email
+from accounts.email import send_email
 
-def activate(request, user):
+def create_email(request, user, action):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = account_activation_token.make_token(user)
     current_site = get_current_site(request).domain
-    email_verification_relative_path = reverse("accounts:email_verify")
-    activation_url = "http://"+current_site+email_verification_relative_path+"?uidb64="+str(uid)+"&token="+str(token)
-    send_activation_email(activation_url=activation_url, to_email=user.email, username=user.username)
+    if action == "register":
+        relative_path = reverse("accounts:email_verify")
+    elif action == "reset_password":
+        relative_path = reverse("accounts:reset_password")
+    actual_url = "http://"+current_site+relative_path+"?uidb64="+str(uid)+"&token="+str(token)
+    send_email(actual_url=actual_url, to_email=user.email, username=user.username, action=action)
 
 
-def verify(request):
+def verify(request, action, **kwargs):
     uidb64 = request.GET.get('uidb64')
     token = request.GET.get('token')
     try:
@@ -25,9 +28,21 @@ def verify(request):
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
     
-    if user is not None and account_activation_token.check_token(user=user, token=token):
+    if user is not None and account_activation_token.check_token(user=user, token=token) and action == "email_verify":
         user.is_email_confirmed = True
         user.save()
         return True
-    else:
-        return False
+    return False
+
+def verify_token(uidb64, token, action):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(id=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user is not None and account_activation_token.check_token(user=user, token=token) and action == "reset_password":
+        return True, uid
+    return False, None
+
+
+
