@@ -116,8 +116,8 @@ class RestPasswordLinkSerializer(serializers.Serializer):
 
 
 class ResetPasswordSerializer(serializers.ModelSerializer):
-    new_password = serializers.CharField(write_only=True)
-    new_password_confirm = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True, style = {"input_style":"password"})
+    new_password_confirm = serializers.CharField(write_only=True, style = {"input_style":"password"})
     uidb64 = serializers.CharField()
     token = serializers.CharField()
     class Meta:
@@ -181,6 +181,33 @@ class ResendEmailConfirmationSerilaizer(serializers.ModelSerializer):
         if uid is not None and verify_status:
             user = User.objects.get(id=uid)
             user.is_email_confirmed = True
+            user.save()
+            return user
+        return super().validate(attrs)
+
+
+
+class ChangePasswordSerializer(serializers.ModelSerializer):
+    old_password = serializers.CharField(max_length=255, style = {"input_style":"password"})
+    new_password = serializers.CharField(max_length=255, style = {"input_style":"password"})
+    new_password_confirm = serializers.CharField(max_length=255, style = {"input_style":"password"})
+
+    class Meta:
+        model = User
+        fields = ["old_password","new_password","new_password_confirm"]
+    
+    def validate(self, attrs):
+        old_password = attrs.get("old_password")
+        new_password = attrs.get("new_password")
+        new_password_confirm = attrs.get("new_password_confirm")
+        user_id = self.context['user_id']
+        user = User.objects.get(id=user_id) or None
+        if user is not None:
+            if not user.check_password(old_password):
+                raise AuthenticationFailed({"error":"old password does not match"})
+            if new_password != new_password_confirm:
+                raise AuthenticationFailed({"error":"new password and password confirm does not match"})
+            user.set_password(new_password)
             user.save()
             return user
         return super().validate(attrs)

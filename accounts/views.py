@@ -19,6 +19,7 @@ from accounts.serializers import (
     LoginSerializer,
     RestPasswordLinkSerializer,
     ResetPasswordSerializer,
+    ChangePasswordSerializer,
 )
 from accounts.activation import create_email, verify
 from accounts.renderers import UserRenderer
@@ -119,6 +120,16 @@ class RestPasswordView(generics.GenericAPIView):
             )
 
 
+class ChangePasswordView(generics.GenericAPIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [IsAuthenticated]
+    def patch(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.context['user_id'] = request.user.id
+        serializer.is_valid(raise_exception=True)
+        return Response(
+            {"done":"password change successfull"}, status=status.HTTP_200_OK
+        )
 
 
     
