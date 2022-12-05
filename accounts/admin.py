@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as Admin
-from accounts.forms import CustomUserChangeForm, CustomUserCreationForm
 from django.contrib.auth import get_user_model as User
+
+from accounts.forms import CustomUserChangeForm, CustomUserCreationForm
+from accounts.models import Profile
 
 # Register your models here.
 
@@ -18,3 +20,6 @@ class UserAdmin(Admin):
             }
         ),
     )
+
+
+admin.site.register(Profile)

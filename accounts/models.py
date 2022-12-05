@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 
+from phonenumber_field.modelfields import PhoneNumberField
+
 from rest_framework_simplejwt.tokens import RefreshToken
 # Create your models here.
 
@@ -30,3 +32,12 @@ class User(AbstractUser):
             "access":str(refresh.access_token)
         }
         return tokens
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    avatar = models.ImageField(upload_to="user/profile")
+    bio = models.TextField(max_length=1000)
+    phone = PhoneNumberField()
+    twitter = models.URLField(null=True, blank=True, max_length=255)
+    facebook = models.URLField(null=True, blank=True, max_length=255)
+    linkedIn = models.URLField(null=True, blank=True, max_length=255)
