@@ -214,14 +214,39 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
 
 
 
+class UserDetailSerailaizer(serializers.ModelSerializer):
+    is_email_confirmed = serializers.BooleanField(read_only=True)
+    last_login = serializers.DateTimeField(read_only=True)
+    date_joined = serializers.DateTimeField(read_only=True)
+    username = serializers.CharField(read_only=True)
+    email = serializers.CharField(read_only=True)
+    class Meta:
+        model = User
+        fields = ['username','email','first_name','last_name','date_joined','last_login','date_of_birth','is_email_confirmed']
+
+
 class ProfileSerializer(serializers.ModelSerializer):
-    user = SimpleUserSerializer(read_only=True)
+    user = UserDetailSerailaizer(read_only=True)
     class Meta:
         model = Profile
         fields = ["user","avatar","bio","phone","twitter","facebook","linkedIn"]
 
 
 class ProfileEditSerializer(serializers.ModelSerializer):
+    user = UserDetailSerailaizer()
     class Meta:
         model = Profile
-        fields = ['avatar','bio','phone','twitter','facebook','linkedIn']
+        fields = ['user','avatar','bio','phone','twitter','facebook','linkedIn']
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop("user")
+        for keys, values in validated_data.items():
+            setattr(instance, keys, values)
+        user = User.objects.get(profile=instance)
+        user.first_name = user_data.get("first_name", user.first_name)
+        user.last_name = user_data.get("last_name", user.last_name)
+        user.date_of_birth = user_data.get("date_of_birth", user.date_of_birth)
+        user.save()
+
+        instance.save()
+        return instance
