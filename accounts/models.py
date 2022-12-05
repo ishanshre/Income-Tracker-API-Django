@@ -35,9 +35,12 @@ class User(AbstractUser):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    avatar = models.ImageField(upload_to="user/profile")
-    bio = models.TextField(max_length=1000)
-    phone = PhoneNumberField()
+    avatar = models.ImageField(upload_to="user/profile", default="default.png", null=True, blank=True)
+    bio = models.TextField(max_length=1000, null=True, blank=True)
+    phone = PhoneNumberField(null=True, blank=True)
     twitter = models.URLField(null=True, blank=True, max_length=255)
     facebook = models.URLField(null=True, blank=True, max_length=255)
     linkedIn = models.URLField(null=True, blank=True, max_length=255)
+
+    def __str__(self):
+        return f"{self.user.username.title()}'s profile"
