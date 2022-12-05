@@ -5,6 +5,7 @@ from django.urls import reverse
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -13,9 +14,10 @@ from accounts.models import User
 from accounts.serializers import (
     RegisterUserSerailizer,
     EmailVerifySerializer,
+    ResendEmailConfirmation,
     LoginSerializer,
     RestPasswordLinkSerializer,
-    ResetPasswordSerializer
+    ResetPasswordSerializer,
 )
 from accounts.activation import create_email, verify
 from accounts.renderers import UserRenderer
@@ -54,6 +56,17 @@ class EmailVerify(generics.GenericAPIView):
         return Response({"error":"Invalid link for verification"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ResendEmailVerificationApiView(generics.GenericAPIView):
+    serializer_class = ResendEmailConfirmation
+    permission_classes = [IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(instance=request.user,data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if not request.user.is_email_confirmed:
+            create_email(request=request, user=request.user, action="register")
+            return Response({"done":"email confirm link has been sent to your mail"}, status=status.HTTP_200_OK)
+        return Response({"error":"email already confirmed"})
+
 class LoginApiView(generics.GenericAPIView):
     serializer_class = LoginSerializer
     renderer_classes = (UserRenderer,)
@@ -90,5 +103,8 @@ class RestPasswordView(generics.GenericAPIView):
         return Response(
                 {"detail":"password change successfull"}, status=status.HTTP_200_OK
             )
+
+
+
 
     

@@ -116,19 +116,17 @@ class RestPasswordLinkSerializer(serializers.Serializer):
 
 
 class ResetPasswordSerializer(serializers.ModelSerializer):
-    old_password = serializers.CharField(write_only=True)
     new_password = serializers.CharField(write_only=True)
     new_password_confirm = serializers.CharField(write_only=True)
     uidb64 = serializers.CharField()
     token = serializers.CharField()
     class Meta:
         model = User
-        fields = ["old_password", "new_password", "new_password_confirm", "uidb64","token"]
+        fields = [ "new_password", "new_password_confirm", "uidb64","token"]
     
 
     def validate(self, attrs):
         try:
-            old_password = attrs.get("old_password",'')
             new_password = attrs.get("new_password",'')
             new_password_confirm = attrs.get("new_password_confirm",'')
             uidb64 = attrs.get("uidb64", "")
@@ -136,10 +134,6 @@ class ResetPasswordSerializer(serializers.ModelSerializer):
             verify_status, uid = verify_token(uidb64=uidb64, token=token, action="reset_password")
             user = User.objects.get(id=uid) or None
             if verify_status and user is not None:
-                if not user.check_password(old_password):
-                    raise AuthenticationFailed({
-                        "error":"old password does not match"
-                    })
                 if new_password and new_password_confirm:
                     if new_password != new_password_confirm:
                         raise serializers.ValidationError(
@@ -163,3 +157,10 @@ class ResetPasswordSerializer(serializers.ModelSerializer):
                 {"error":serializers_error[api_settings.NON_FIELD_ERRORS_KEY]}
             )
         return super().validate(attrs)
+
+
+class ResendEmailConfirmation(serializers.ModelSerializer):
+    is_email_confirmed = serializers.BooleanField(read_only=True)
+    class Meta:
+        model = User
+        fields = ["is_email_confirmed"]

@@ -5,7 +5,7 @@ def send_email(actual_url, to_email, username, action):
     if action == "register":
         subject = "Activate your Income and Expences Tracker account"
         message = f'''
-        Hello {username.title()}! Please open the following link to activate your account
+        Hello {username.title()}! Please open the following link to confirm email in your account
         {actual_url}
         '''
 
