@@ -7,7 +7,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
 
-from accounts.models import User
+from accounts.models import User, Profile
 from accounts.activation import verify_token
 
 
@@ -211,3 +211,17 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
             user.save()
             return user
         return super().validate(attrs)
+
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    user = SimpleUserSerializer(read_only=True)
+    class Meta:
+        model = Profile
+        fields = ["user","avatar","bio","phone","twitter","facebook","linkedIn"]
+
+
+class ProfileEditSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['avatar','bio','phone','twitter','facebook','linkedIn']

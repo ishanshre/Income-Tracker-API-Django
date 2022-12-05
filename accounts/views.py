@@ -1,8 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
+from django.core.exceptions import ValidationError
 
 
-from rest_framework import generics
+from rest_framework import generics, viewsets, mixins
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -10,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from accounts.models import User
+from accounts.models import User, Profile
 from accounts.serializers import (
     RegisterUserSerailizer,
     EmailVerifySerializer,
@@ -20,9 +21,13 @@ from accounts.serializers import (
     RestPasswordLinkSerializer,
     ResetPasswordSerializer,
     ChangePasswordSerializer,
+    ProfileSerializer,
+    ProfileEditSerializer,
 )
 from accounts.activation import create_email, verify
 from accounts.renderers import UserRenderer
+
+from core.permissions import IsOwner
 # Create your views here
 
 class RegisterUserView(generics.GenericAPIView):
@@ -38,7 +43,7 @@ class RegisterUserView(generics.GenericAPIView):
 
 
         return Response({"Done":serializer.data,"message":"Check your email to verify your account"}, status=status.HTTP_201_CREATED)
-        
+
 
 # class RegisterUserView(mixins.CreateModelMixin, viewsets.GenericViewSet):
 #     queryset = User().objects.all()
@@ -72,7 +77,7 @@ class ResendEmailVerificationApiView(generics.GenericAPIView):
 
 class ResendEmailConfirmationView(generics.GenericAPIView):
     serializer_class = ResendEmailConfirmationSerilaizer
-    
+
     def patch(self, request, *args, **kwargs):
         serilaizer = self.serializer_class(data=request.data)
         serilaizer.is_valid(raise_exception=True)
@@ -132,4 +137,23 @@ class ChangePasswordView(generics.GenericAPIView):
         )
 
 
-    
+class ProfileDetailApiView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get','put','head','options']
+    def get_serializer_class(self):
+        if self.request.method == "PUT":
+            return ProfileEditSerializer
+        return ProfileSerializer
+        
+    def get(self, request, *args, **kwargs):
+        profile = get_object_or_404(Profile, user=self.request.user)
+        serializer = ProfileSerializer(instance=profile, data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, *args, **kwargs):
+        profile = get_object_or_404(Profile, user=self.request.user)
+        serializer = ProfileEditSerializer(instance=profile, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
