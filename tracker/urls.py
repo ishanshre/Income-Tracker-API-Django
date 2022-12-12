@@ -31,6 +31,7 @@ urlpatterns = [
     path("auth/", include("accounts.urls")),
     path("", include("core.urls")),
     path("", include("income.urls")),
+    path("", include("stats.urls")),
 ]
 
 

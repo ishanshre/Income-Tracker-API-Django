@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'core.apps.CoreConfig',
     'income.apps.IncomeConfig',
+    'stats.apps.StatsConfig',
 ]
 
 MIDDLEWARE = [

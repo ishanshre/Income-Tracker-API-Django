@@ -10,13 +10,13 @@ class ExpenceSerialzer(serializers.ModelSerializer):
     owner = SimpleUserSerializer(read_only=True)
     class Meta:
         model = Expence
-        fields = ["id","category","amount","description", "owner", "created","updated"]
+        fields = ["id","category","amount","description", "owner", "date","created","updated"]
 
 
 class ExpenceEditSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expence
-        fields = ["id","category","amount","description"]
+        fields = ["id","category","amount","description","date"]
 
 
 class ExpencePatchSerializer(serializers.ModelSerializer):
