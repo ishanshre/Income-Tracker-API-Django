@@ -3,6 +3,8 @@ from rest_framework.settings import api_settings
 from rest_framework.validators import UniqueValidator
 from rest_framework.exceptions import AuthenticationFailed
 
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
@@ -250,3 +252,17 @@ class ProfileEditSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+    
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+
+    def validate(self, attrs):
+        self.token = attrs['refresh']
+        return attrs
+    
+    def save(self, **kwargs):
+        try:
+            RefreshToken(self.token).blacklist()
+        except TokenError:
+            self.fail("Bad Token")

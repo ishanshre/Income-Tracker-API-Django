@@ -23,6 +23,7 @@ from accounts.serializers import (
     ChangePasswordSerializer,
     ProfileSerializer,
     ProfileEditSerializer,
+    LogoutSerializer,
 )
 from accounts.activation import create_email, verify
 from accounts.renderers import UserRenderer
@@ -157,3 +158,14 @@ class ProfileDetailApiView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
+class LogoutApiView(generics.GenericAPIView):
+    serializer_class = LogoutSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"success":"logout successfull"}, status=status.HTTP_204_NO_CONTENT)
