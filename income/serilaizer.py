@@ -11,14 +11,14 @@ class IncomeViewSerializer(serializers.ModelSerializer):
     owner = SimpleUserSerializer()
     class Meta:
         model = Income
-        fields = ["id", "source", "amount", "description", "owner", "created", "updated"]
+        fields = ["id", "source", "amount", "description", "date","owner", "created", "updated"]
 
 
 class IncomeCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Income
-        fields = ["id", "source", "amount", "description", "created", "updated"]
+        fields = ["id", "source", "amount", "description",  "date","created", "updated"]
     
     def create(self, validated_data):
         owner_id = self.context['owner_id']
